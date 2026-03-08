@@ -2332,6 +2332,12 @@ function setScoreWithScale(id, score, scaleText) {
   const scale = (scaleText === '') ? '' : String(scaleText || '/\u00A05')
   el.innerHTML = '<span class="npScoreWithScale"><span class="npScoreMain">' + esc(main) + '</span>' + (scale ? '<span class="npScoreScale">' + esc(scale) + '</span>' : '') + '</span>'
 }
+function setScoreChip(id, score) {
+  const el = $(id)
+  if (!el) return
+  const main = fmt2(Number(score ?? 0))
+  el.innerHTML = '<span class="npScoreMain">' + esc(main) + '</span>'
+}
 function clamp01(x) {
   const n = Number(x)
   if (!Number.isFinite(n)) return 0
@@ -3145,7 +3151,7 @@ function renderHeaderPills(r) {
 
   const roleFit = r?.rfs?.top_groups?.[0]?.group_name || ''
 
-  setScoreWithScale('reasoningIndexPill', Math.max(0, Math.min(5, fri)), '/\u00A05')
+  setScoreChip('reasoningIndexPill', Math.max(0, Math.min(5, fri)))
   const pillEl = $('reasoningIndexPill')
   if (pillEl) pillEl.className = 'pill toneC'
   setPill('rslPill', rslLevel || '-', 'toneB')
