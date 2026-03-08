@@ -109,6 +109,15 @@
       transform:translateY(8px);
     }
 
+    html.npHome-scope .loadingText{
+      transition: opacity .35s ease, transform .35s ease;
+    }
+
+    html.npHome-scope .loadingText.fade{
+      opacity:0;
+      transform: translateY(6px);
+    }
+
     @keyframes npSpin{
       to{ transform: rotate(360deg); }
     }
@@ -687,7 +696,7 @@ html.npHome-scope .npOverlayIconWrap{
             stroke-linejoin="round"/>
         </svg>
       </div>
-      <p id="npStatusTitle" class="npOverlayTitle">Analyzing</p>
+      <p id="npStatusTitle" class="npOverlayTitle loadingText">Analyzing</p>
     </div>
   </div>
 
@@ -776,10 +785,12 @@ html.npHome-scope .npOverlayIconWrap{
     function setOverlayText(nextText){
       if(!statusTitle) return;
       statusTitle.classList.add("isChanging");
+      statusTitle.classList.add("fade");
       window.setTimeout(()=>{
         statusTitle.textContent = nextText;
         statusTitle.classList.remove("isChanging");
-      }, 140);
+        statusTitle.classList.remove("fade");
+      }, 150);
     }
 
     function setOverlayState(state, titleText){
@@ -808,13 +819,19 @@ html.npHome-scope .npOverlayIconWrap{
 
     function startOverlayStages(){
       clearStageTimers();
-      setOverlayState("loading", "Analyzing");
+      setOverlayState("loading", "Initializing engine");
       stageTimerIds.push(window.setTimeout(()=>{
-        if(isSubmitting) setOverlayState("loading", "Mapping reasoning structure");
-      }, 1200));
+        if(isSubmitting) setOverlayState("loading", "Segmenting reasoning units");
+      }, 2500));
       stageTimerIds.push(window.setTimeout(()=>{
-        if(isSubmitting) setOverlayState("loading", "Generating report");
-      }, 2400));
+        if(isSubmitting) setOverlayState("loading", "Mapping reasoning signals");
+      }, 3500));
+      stageTimerIds.push(window.setTimeout(()=>{
+        if(isSubmitting) setOverlayState("loading", "Calculating cognitive metrics");
+      }, 5000));
+      stageTimerIds.push(window.setTimeout(()=>{
+        if(isSubmitting) setOverlayState("loading", "Generating forensic report");
+      }, 5000));
     }
 
     function setActiveSample(btn){
