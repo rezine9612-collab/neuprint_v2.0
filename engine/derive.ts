@@ -6402,6 +6402,86 @@ function adaptStrictComputeToOutputJSON2(strictRes: any): OutputJSON2 {
   return output;
 }
 
+function inferStructureTypeFromCounts(claims: number, subClaims: number, counterpoints: number, refutations: number) {
+  if ((counterpoints + refutations) >= 2) return 'networked';
+  if (subClaims >= 2 || claims >= 3) return 'hierarchical';
+  return 'linear';
+}
+
+function inferWarrantsFromUnitTexts(extractionUnits: any[] = [], unitTexts: string[] = []) {
+  const re = /\b(because|therefore|thus|hence|which means|this suggests|this shows|for that reason|implies)\b/i;
+  let n = 0;
+  for (let i = 0; i < extractionUnits.length; i++) {
+    const role = safeStr(extractionUnits[i]?.role).toLowerCase();
+    if (role !== 'reason' && role !== 'claim') continue;
+    if (re.test(safeStr(unitTexts[i] ?? ''))) n++;
+  }
+  return n;
+}
+
+function inferBeliefChangeFromTexts(unitTexts: string[] = []) {
+  const re = /\b(i used to think|at first|but now|i changed my mind|on second thought|i no longer think)\b/i;
+  return unitTexts.some((t) => re.test(safeStr(t)));
+}
+
+function inferIntentMarkersFromTexts(unitTexts: string[] = []) {
+  const re = /\b(i will argue|this essay aims|i will show|my point is|i want to argue)\b/i;
+  return unitTexts.reduce((acc, t) => acc + (re.test(safeStr(t)) ? 1 : 0), 0);
+}
+
+function inferDriftSegmentsFromTexts(unitTexts: string[] = []) {
+  const re = /\b(anyway|by the way|in any case|to change the subject)\b/i;
+  return unitTexts.reduce((acc, t) => acc + (re.test(safeStr(t)) ? 1 : 0), 0);
+}
+
+function inferLoopsFromTexts(unitTexts: string[] = []) {
+  let loops = 0;
+  for (let i = 1; i < unitTexts.length; i++) {
+    const prev = safeStr(unitTexts[i - 1]).toLowerCase().trim();
+    const curr = safeStr(unitTexts[i]).toLowerCase().trim();
+    if (!prev || !curr) continue;
+    const prevHead = prev.split(/\s+/).slice(0, 6).join(' ');
+    const currHead = curr.split(/\s+/).slice(0, 6).join(' ');
+    if (prevHead && currHead && prevHead === currHead) loops++;
+  }
+  return loops;
+}
+
+function inferRevisionDepthFromText(text: string) {
+  const s = safeStr(text);
+  if (!s) return 0;
+  if (/\b(i changed my mind|i no longer think|i now reject)\b/i.test(s)) return 3;
+  if (/\b(on second thought|i reconsider|i revise this)\b/i.test(s)) return 2;
+  if (/\b(or rather|more precisely|to clarify)\b/i.test(s)) return 1;
+  return 0;
+}
+
+function normalizeRawSignalsQuotes(rawSignalsQuotes: any) {
+  if (Array.isArray(rawSignalsQuotes)) {
+    return {
+      A7_value_aware_quote_candidates: [],
+      A8_perspective_flexible_quote_candidates: [],
+      self_repair_quote_candidates: [],
+      framework_generation_quote_candidates: [],
+    };
+  }
+
+  return {
+    A7_value_aware_quote_candidates: Array.isArray(rawSignalsQuotes?.A7_value_aware_quote_candidates)
+      ? rawSignalsQuotes.A7_value_aware_quote_candidates.filter((v: any) => typeof v === 'string')
+      : [],
+    A8_perspective_flexible_quote_candidates: Array.isArray(rawSignalsQuotes?.A8_perspective_flexible_quote_candidates)
+      ? rawSignalsQuotes.A8_perspective_flexible_quote_candidates.filter((v: any) => typeof v === 'string')
+      : [],
+    self_repair_quote_candidates: Array.isArray(rawSignalsQuotes?.self_repair_quote_candidates)
+      ? rawSignalsQuotes.self_repair_quote_candidates.filter((v: any) => typeof v === 'string')
+      : [],
+    framework_generation_quote_candidates: Array.isArray(rawSignalsQuotes?.framework_generation_quote_candidates)
+      ? rawSignalsQuotes.framework_generation_quote_candidates.filter((v: any) => typeof v === 'string')
+      : [],
+  };
+}
+
 function deriveCountsFromUnits(extractionUnits: any[] = []) {
   let claims = 0;
   let reasons = 0;
@@ -6448,24 +6528,54 @@ function rebuildLayerFeaturesFromUnits(extraction: any, extractionUnits: any[] =
   const baseLayer1 = extraction?.layer_1 ?? {};
   const baseLayer2 = extraction?.layer_2 ?? {};
   const baseLayer3 = extraction?.layer_3 ?? {};
-  const unitCount = extractionUnits.length || segmentedUnits.length || numOr0(baseLayer0?.units);
+  const unitTexts = Array.isArray(segmentedUnits)
+    ? segmentedUnits.map((u: any) => safeStr(u?.text ?? u)).filter(Boolean)
+    : [];
+  const unitCount = extractionUnits.length || unitTexts.length || numOr0(baseLayer0?.units);
   const transitionVector = extractionUnits.length
     ? extractionUnits.map((u) => (u?.has_transition ? 1 : 0))
     : Array.isArray(baseLayer0?.per_unit?.transitions)
       ? baseLayer0.per_unit.transitions
-      : [];
+      : Array.from({ length: unitCount }, () => 0);
+  const revisionVector = extractionUnits.length
+    ? extractionUnits.map((u) => (u?.is_revision ? 1 : 0))
+    : Array.isArray(baseLayer0?.per_unit?.revisions)
+      ? baseLayer0.per_unit.revisions
+      : Array.from({ length: unitCount }, () => 0);
   const evidenceTypes = extractionUnits
-    .map((u) => safeStr(u?.evidence_type))
-    .filter(Boolean);
+    .map((u) => safeStr(u?.evidence_type).toLowerCase())
+    .filter((v) => ['example', 'data', 'source', 'scenario'].includes(v));
+  const uniqueEvidenceTypes = Array.from(new Set(evidenceTypes));
+  const unitLengths = unitTexts.length
+    ? unitTexts.map((t: string) => t.trim().split(/\s+/).filter(Boolean).length)
+    : Array.isArray(baseLayer0?.unit_lengths)
+      ? baseLayer0.unit_lengths
+      : Array.from({ length: unitCount }, () => 0);
+  const subClaims = Math.max(0, counts.claims - 1);
+  const warrants = inferWarrantsFromUnitTexts(extractionUnits, unitTexts);
+  const structureType = baseLayer1?.structure_type ?? inferStructureTypeFromCounts(counts.claims, subClaims, counts.counterpoints, counts.refutations);
+  const revisionDepthVector = extractionUnits.length
+    ? extractionUnits.map((u, i) => (u?.is_revision ? inferRevisionDepthFromText(unitTexts[i] ?? '') : 0))
+    : Array.isArray(baseLayer0?.per_unit?.revision_depth)
+      ? baseLayer0.per_unit.revision_depth
+      : Array.from({ length: unitCount }, () => 0);
+  const beliefChange = baseLayer2?.belief_change != null ? Boolean(baseLayer2?.belief_change) : inferBeliefChangeFromTexts(unitTexts);
+  const intentMarkers = baseLayer3?.intent_markers != null ? numOr0(baseLayer3?.intent_markers) : inferIntentMarkersFromTexts(unitTexts);
+  const driftSegments = baseLayer3?.drift_segments != null ? numOr0(baseLayer3?.drift_segments) : inferDriftSegmentsFromTexts(unitTexts);
+  const loops = baseLayer3?.loops != null ? numOr0(baseLayer3?.loops) : inferLoopsFromTexts(unitTexts);
 
   return {
     ...extraction,
+    raw_signals_quotes: normalizeRawSignalsQuotes(extraction?.raw_signals_quotes),
     layer_0: {
       ...baseLayer0,
       units: unitCount,
+      unit_lengths: unitLengths,
       per_unit: {
         ...(baseLayer0?.per_unit ?? {}),
         transitions: transitionVector,
+        revisions: revisionVector,
+        revision_depth: revisionDepthVector,
       },
       claims: counts.claims,
       reasons: counts.reasons,
@@ -6473,21 +6583,33 @@ function rebuildLayerFeaturesFromUnits(extraction: any, extractionUnits: any[] =
     },
     layer_1: {
       ...baseLayer1,
+      sub_claims: baseLayer1?.sub_claims != null ? numOr0(baseLayer1?.sub_claims) : subClaims,
+      warrants: baseLayer1?.warrants != null ? numOr0(baseLayer1?.warrants) : warrants,
       counterpoints: counts.counterpoints,
       refutations: counts.refutations,
+      structure_type: structureType,
     },
     layer_2: {
       ...baseLayer2,
       transitions: counts.transitions,
+      transition_types: Array.isArray(baseLayer2?.transition_types) ? baseLayer2.transition_types : [],
       transition_ok: counts.transitions,
       revisions: counts.revisions,
-      evidence_types: evidenceTypes.length ? evidenceTypes : (baseLayer2?.evidence_types ?? []),
+      revision_depth_sum: baseLayer2?.revision_depth_sum != null ? numOr0(baseLayer2?.revision_depth_sum) : revisionDepthVector.reduce((a: number, b: number) => a + numOr0(b), 0),
+      belief_change: beliefChange,
+      evidence_types: uniqueEvidenceTypes.length ? uniqueEvidenceTypes : (Array.isArray(baseLayer2?.evidence_types) ? baseLayer2.evidence_types : []),
     },
     layer_3: {
       ...baseLayer3,
+      intent_markers: intentMarkers,
+      drift_segments: driftSegments,
+      loops: loops,
       self_regulation_signals: counts.self_regulation_signals,
       hedges: counts.hedges,
     },
+    evidence_types: uniqueEvidenceTypes.length ? uniqueEvidenceTypes : (Array.isArray(extraction?.evidence_types) ? extraction.evidence_types : []),
+    adjacency_links: numOr0(extraction?.adjacency_links),
+    backend_reserved: extraction?.backend_reserved ?? { kpf_sim: null, tps_h: null },
   };
 }
 

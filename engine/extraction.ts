@@ -60,6 +60,44 @@ Do NOT:
 
 Your task is to classify the reasoning role of each provided unit.
 
+For EACH unit, return these fields:
+- id
+- role
+- has_transition
+- transition_type
+- evidence_type
+- is_counterpoint
+- is_refutation
+- is_conclusion
+- is_revision
+- has_self_regulation
+- has_hedge
+
+Allowed role values:
+- claim
+- reason
+- evidence
+- counterpoint
+- conclusion
+- other
+
+Allowed transition_type values:
+- compare
+- contrast
+- cause
+- concession
+- extension
+- example
+- clarification
+- conclusion
+- none
+
+Allowed evidence_type values:
+- example
+- data
+- source
+- scenario
+- none
 
 ====================================================
 TRANSITION DETECTION
@@ -660,10 +698,10 @@ OUTPUT SCHEMA
   "units": [
     {
       "id": "U1",
-      "role": "other",
+      "role": "claim",
       "has_transition": false,
-      "transition_type": "",
-      "evidence_type": "",
+      "transition_type": "none",
+      "evidence_type": "none",
       "is_counterpoint": false,
       "is_refutation": false,
       "is_conclusion": false,
@@ -672,43 +710,12 @@ OUTPUT SCHEMA
       "has_hedge": false
     }
   ],
-  "layer_0": {
-    "units": 0,
-    "per_unit": {
-      "transitions": []
-    },
-    "claims": 0,
-    "reasons": 0,
-    "evidence": 0
-  },
-  "layer_1": {
-    "sub_claims": 0,
-    "warrants": 0,
-    "counterpoints": 0,
-    "refutations": 0,
-    "structure_type": null
-  },
-  "layer_2": {
-    "transitions": 0,
-    "transition_types": [],
-    "transition_ok": 0,
-    "belief_change": false,
-    "revisions": 0,
-    "revision_depth_sum": 0,
-    "evidence_types": []
-  },
-  "layer_3": {
-    "intent_markers": 0,
-    "drift_segments": 0,
-    "loops": 0,
-    "self_regulation_signals": 0,
-    "hedges": 0
-  },
   "rsl_rubric": {
     "coherence": 0,
-    "structure": 0,
-    "evaluation": 0,
-    "integration": 0
+    "depth": 0,
+    "breadth": 0,
+    "reflection": 0,
+    "control": 0
   },
   "rsl": {
     "summary": {
@@ -726,15 +733,11 @@ OUTPUT SCHEMA
       { "code": "R8", "label": "Perspective Flexibility", "score_1to5": 0, "observation": "" }
     ]
   },
+  "decision_compression_quote": "",
   "raw_signals_quotes": {
-    "R7_value_aware_quote_candidates": [],
-    "R8_perspective_flexible_quote_candidates": [],
+    "A7_value_aware_quote_candidates": [],
+    "A8_perspective_flexible_quote_candidates": [],
     "self_repair_quote_candidates": [],
     "framework_generation_quote_candidates": []
-  },
-  "backend_reserved": {
-    "kpf_sim": null,
-    "tps_h": null
-  },
-  "decision_compression_quote": ""
+  }
 }`;
