@@ -40,7 +40,7 @@ async function callOpenAI(prompt: string, userText: string) {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) throw new Error('Missing OPENAI_API_KEY environment variable.');
 
-  const model = process.env.OPENAI_MODEL || 'gpt-4.o-mini';
+  const model = process.env.OPENAI_MODEL || 'gpt-4.1-mini';
 
   const body = {
     model,
