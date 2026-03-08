@@ -3145,7 +3145,7 @@ function renderHeaderPills(r) {
 
   const roleFit = r?.rfs?.top_groups?.[0]?.group_name || ''
 
-  setScoreWithScale('reasoningIndexPill', Math.max(0, Math.min(5, fri)), '/\u00A05')
+  setScoreWithScale('reasoningIndexPill', Math.max(0, Math.min(5, fri)), '')
   const pillEl = $('reasoningIndexPill')
   if (pillEl) pillEl.className = 'pill toneC'
   setPill('rslPill', rslLevel || '-', 'toneB')
