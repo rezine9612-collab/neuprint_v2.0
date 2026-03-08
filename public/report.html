@@ -2329,7 +2329,7 @@ function setScoreWithScale(id, score, scaleText) {
   const el = $(id)
   if (!el) return
   const main = fmt2(Number(score ?? 0))
-  const scale = scaleText === '' ? '' : String(scaleText || '/\u00A05')
+  const scale = (scaleText === '') ? '' : String(scaleText || '/\u00A05')
   el.innerHTML = '<span class="npScoreWithScale"><span class="npScoreMain">' + esc(main) + '</span>' + (scale ? '<span class="npScoreScale">' + esc(scale) + '</span>' : '') + '</span>'
 }
 function clamp01(x) {
