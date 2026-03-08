@@ -1,0 +1,1103 @@
+<!doctype html>
+<html lang="en" class="npHome-scope">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>NeuPrint - Analyze</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+
+  <!-- Material Symbols (arrow_right_alt) -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=arrow_right_alt" />
+  <style>
+    html.npHome-scope .material-symbols-outlined{
+      font-variation-settings:
+      'FILL' 0,
+      'wght' 400,
+      'GRAD' 0,
+      'opsz' 24;
+    }
+
+
+    html.npHome-scope .npOverlay{
+      position:fixed;
+      inset:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:rgba(255,255,255,0.72);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      opacity:0;
+      visibility:hidden;
+      pointer-events:none;
+      transition:opacity .22s ease, visibility .22s ease;
+      z-index:10000;
+    }
+
+    html.npHome-scope .npOverlay.isVisible{
+      opacity:1;
+      visibility:visible;
+      pointer-events:auto;
+    }
+
+    html.npHome-scope .npOverlayCard{
+      min-width:280px;
+      padding:0;
+      border-radius:0;
+      background:transparent;
+      box-shadow:none;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      gap:0;
+    }
+
+    html.npHome-scope .npOverlayIconWrap{
+      width:32px;
+      height:32px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    
+      margin-bottom:2px;
+      transform: translateY(-6px);
+    }
+
+    html.npHome-scope .npSpinner,
+    html.npHome-scope .npCheck{
+      width:24px;
+      height:24px;
+      display:block;
+      flex:0 0 auto;
+    }
+
+    html.npHome-scope .npSpinner{
+      animation: npSpin .8s linear infinite;
+    }
+
+    html.npHome-scope .npCheck{
+      display:none;
+      opacity:0;
+      transform:scale(.92);
+    }
+
+    html.npHome-scope .npOverlay.isSuccess .npSpinner{ display:none; }
+    html.npHome-scope .npOverlay.isSuccess .npCheck{
+      display:block;
+      animation: npFadeIn .22s ease forwards;
+    }
+
+    html.npHome-scope .npOverlayTitle{
+      margin:0;
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif;
+      font-size: 24px;
+      line-height:1.15;
+      font-weight: 500;
+      color:#0b1220;
+      min-height:28px;
+      transition:opacity .22s ease, transform .22s ease;
+      transform:translateY(0);
+    }
+
+    html.npHome-scope .npOverlayTitle.isChanging{
+      opacity:0;
+      transform:translateY(8px);
+    }
+
+    @keyframes npSpin{
+      to{ transform: rotate(360deg); }
+    }
+
+    @keyframes npFadeIn{
+      to{
+        opacity:1;
+        transform:scale(1);
+      }
+    }
+
+    @keyframes npOverlayRise{
+      from{
+        opacity:0;
+        transform:translateY(10px);
+      }
+      to{
+        opacity:1;
+        transform:translateY(0);
+      }
+    }
+
+    html.npHome-scope .npOverlay.isVisible .npOverlayCard{
+      animation: npOverlayRise .28s cubic-bezier(.16,1,.3,1);
+    }
+
+  
+/* NeuPrint loading layout refinement */
+html.npHome-scope .npOverlay{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+html.npHome-scope .npOverlayCard{
+  position:relative;
+  width:auto;
+  height:auto;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+}
+
+html.npHome-scope .npOverlayTitle{
+  position:static;
+  left:auto;
+  top:auto;
+  transform:translateY(0);
+  font-size:24px;
+  font-weight:600;
+}
+
+html.npHome-scope .npOverlayIconWrap{
+  position:static;
+  left:auto;
+  top:auto;
+}
+ 
+
+    html.npHome-scope{
+      --containerMax: 1120px;
+
+      --bg:#ffffff;
+      --text:#0b1220;
+      --muted:#667085;
+
+      --inputBorder:#E6EBF2;
+      --ring:#444A59;
+
+      --radiusLG: 14px;
+      --font: "Barlow", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+
+      /* Logo sizing */
+      --logoW: 220px;
+      --logoW-m: 190px;
+    }
+
+    html.npHome-scope *{ box-sizing:border-box; }
+    html.npHome-scope, html.npHome-scope body{ height:100%; }
+    html.npHome-scope body{
+      margin:0;
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    html.npHome-scope .page{
+      min-height:100vh;
+      display:flex;
+      flex-direction:column;
+    }
+
+    html.npHome-scope .container{
+      width:100%;
+      max-width: var(--containerMax);
+      margin:0 auto;
+      padding: 0 20px;
+    }
+
+    html.npHome-scope .main{
+      flex:1;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding: 44px 0 84px;
+    }
+
+    html.npHome-scope .hero{
+      width: 100%;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      text-align:center;
+      gap: 14px;
+    }
+
+    html.npHome-scope .brand{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:10px;
+      margin-bottom: 10px;
+    }
+
+    html.npHome-scope .brandLogo{
+      width: var(--logoW);
+      height: auto;
+      display:block;
+      margin-left:-6px;
+    }
+
+    html.npHome-scope .brandline{
+      display:inline-flex;
+      align-items:center;
+      margin-top:10px;
+      gap:8px;
+      font-size:13px;
+      color:var(--muted);
+      flex-wrap:wrap;
+    }
+
+    html.npHome-scope h1{
+      margin: 18px 0 0;
+      font-size: 42px;
+      line-height: 1.16;
+      letter-spacing: -0.6px;
+      font-weight: 600;
+      max-width: 860px;
+
+      /* (2) 단어 중간 줄바꿈 방지 */
+      word-break: keep-all;
+      overflow-wrap: normal;
+      hyphens: none;
+    }
+
+    html.npHome-scope .subtitle{
+      margin: 6px 0 0;
+      font-size: 18px;
+      line-height: 1.55;
+      font-weight: 400;
+      max-width: 760px;
+
+      /* (2) 단어 중간 줄바꿈 방지 */
+      word-break: keep-all;
+      overflow-wrap: normal;
+      hyphens: none;
+    }
+
+    html.npHome-scope /* Intake block */
+    .intakeWrap{
+      margin-top: 22px;
+      width: 100%;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap: 12px;
+    }
+
+    html.npHome-scope .intakeBox{
+      width: 770px;
+      min-height: 150px;
+      height: 150px;
+      max-height: 320px;
+      border: 1px solid var(--inputBorder);
+      border-radius: var(--radiusLG);
+      background:#fff;
+      display:flex;
+      flex-direction:column;
+      justify-content:flex-start;
+      padding: 14px 16px 12px;
+      box-shadow: 0 0 0 0 rgba(0,0,0,0);
+      transition:
+        box-shadow .14s ease,
+        border-color .14s ease,
+        height .85s cubic-bezier(.16,1,.3,1);
+    }
+
+    html.npHome-scope /* 포커스시 "바깥" 링 */
+    .intakeBox:focus-within{
+      border-color: transparent;
+      box-shadow: 0 0 0 2px var(--ring);
+    }
+
+    html.npHome-scope /* 내용이 있으면 포커스 없어도 링 유지 */
+    .intakeBox.isFilled{
+      border-color: transparent;
+      box-shadow: 0 0 0 2px var(--ring);
+    }
+
+    html.npHome-scope .intakeText{
+      width:100%;
+      flex: 0 0 auto;
+      height: 96px;
+      min-height: 96px;
+      max-height: 254px;
+      border:0;
+      outline:0;
+      resize:none;
+      font: 14px/1.55 var(--font);
+      color: var(--text);
+      padding: 0;
+      margin: 0;
+      background: transparent;
+      overflow-y: hidden;
+      overflow-x: hidden;
+      white-space: pre-wrap;
+      overflow-wrap: break-word;
+      word-break: break-word;
+      scrollbar-width: thin;
+      transition: height .85s cubic-bezier(.16,1,.3,1);
+    }
+
+    html.npHome-scope .intakeMirror{
+      position:absolute;
+      left:-99999px;
+      top:0;
+      visibility:hidden;
+      pointer-events:none;
+      white-space:pre-wrap;
+      overflow-wrap:break-word;
+      word-break:break-word;
+      font: 14px/1.55 var(--font);
+      padding:0;
+      margin:0;
+      width:738px;
+    }
+
+    html.npHome-scope .intakeText::placeholder{
+      color:#000000;
+      transition: opacity .12s ease;
+    }
+
+    html.npHome-scope /* Placeholder hides on focus */
+    .intakeText:focus::placeholder{
+      opacity: 0;
+    }
+
+    html.npHome-scope .intakeTools{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      margin-top: auto;
+      padding-top: 10px;
+      justify-content:flex-start;
+      flex: 0 0 auto;
+    }
+
+    html.npHome-scope .iconBtn{
+      width: 28px;
+      height: 28px;
+      border-radius: 10px;
+      border: 0;
+      background: transparent;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      color:#111827;
+      opacity: .50;
+      cursor: default;
+      padding:0;
+    }
+
+    html.npHome-scope .iconBtn:hover{ opacity: 1; }
+
+    html.npHome-scope /* Provided icon styles */
+    .material-symbols--attach-file-rounded{
+      display:inline-block;
+      width:24px;
+      height:24px;
+      --svg:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23000' d='M18 15.75q0 2.6-1.825 4.425T11.75 22t-4.425-1.825T5.5 15.75V6.5q0-1.875 1.313-3.187T10 2t3.188 1.313T14.5 6.5v8.75q0 1.15-.8 1.95t-1.95.8t-1.95-.8t-.8-1.95V7q0-.425.288-.712T10 6t.713.288T11 7v8.25q0 .325.213.538t.537.212t.538-.213t.212-.537V6.5q-.025-1.05-.737-1.775T10 4t-1.775.725T7.5 6.5v9.25q-.025 1.775 1.225 3.013T11.75 20q1.75 0 2.975-1.237T16 15.75V7q0-.425.288-.712T17 6t.713.288T18 7z'/%3E%3C/svg%3E");
+      background-color: currentColor;
+      -webkit-mask-image: var(--svg);
+      mask-image: var(--svg);
+      -webkit-mask-repeat:no-repeat;
+      mask-repeat:no-repeat;
+      -webkit-mask-size:100% 100%;
+      mask-size:100% 100%;
+    }
+
+    html.npHome-scope .material-symbols--center-focus-weak-outline{
+      display:inline-block;
+      width:24px;
+      height:24px;
+      --svg:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23000' d='M12 16q-1.65 0-2.825-1.175T8 12t1.175-2.825T12 8t2.825 1.175T16 12t-1.175 2.825T12 16m0-2q.825 0 1.413-.587T14 12t-.587-1.412T12 10t-1.412.588T10 12t.588 1.413T12 14m-7 7q-.825 0-1.412-.587T3 19v-4h2v4h4v2zm10 0v-2h4v-4h2v4q0 .825-.587 1.413T19 21zM3 9V5q0-.825.588-1.412T5 3h4v2H5v4zm16 0V5h-4V3h4q.825 0 1.413.588T21 5v4z'/%3E%3C/svg%3E");
+      background-color: currentColor;
+      -webkit-mask-image: var(--svg);
+      mask-image: var(--svg);
+      -webkit-mask-repeat:no-repeat;
+      mask-repeat:no-repeat;
+      -webkit-mask-size:100% 100%;
+      mask-size:100% 100%;
+    }
+
+    html.npHome-scope .material-symbols--mic{
+      display:inline-block;
+      width:24px;
+      height:24px;
+      --svg:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23000' d='M12 14q-1.25 0-2.125-.875T9 11V5q0-1.25.875-2.125T12 2t2.125.875T15 5v6q0 1.25-.875 2.125T12 14m-1 7v-3.075q-2.6-.35-4.3-2.325T5 11h2q0 2.075 1.463 3.538T12 16t3.538-1.463T17 11h2q0 2.625-1.7 4.6T13 17.925V21z'/%3E%3C/svg%3E");
+      background-color: currentColor;
+      -webkit-mask-image: var(--svg);
+      mask-image: var(--svg);
+      -webkit-mask-repeat:no-repeat;
+      mask-repeat:no-repeat;
+      -webkit-mask-size:100% 100%;
+      mask-size:100% 100%;
+    }
+
+    html.npHome-scope /* Sample buttons */
+    .sampleRow{
+      width: 770px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top: 4px;
+    }
+
+    html.npHome-scope .sampleBtn{
+      appearance:none;
+      box-sizing: border-box;
+      border: 1px solid #E2E8F0;
+      box-shadow: 0 0 0 1px rgba(255,255,255,0);
+
+      background:#fff;
+      font: 14px/1 var(--font);
+      font-weight: 400;
+      padding: 10px 14px;
+      border-radius: 999px;
+      cursor: pointer;
+
+      transition: border-color .14s ease, box-shadow .14s ease, transform .14s ease;
+      user-select:none;
+    }
+
+    html.npHome-scope .sampleBtn:hover, html.npHome-scope .sampleBtn:focus-visible{
+      border-color: var(--ring);
+      box-shadow: 0 0 0 1px var(--ring);
+      outline:none;
+    }
+
+    html.npHome-scope .sampleBtn:active, html.npHome-scope .sampleBtn.isActive{
+      border-color: var(--ring);
+      box-shadow: 0 0 0 1px var(--ring);
+    }
+
+    html.npHome-scope /* CTA */
+    .cta{
+      margin-top:50px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+
+      padding:12px 18px;
+      min-width:210px;
+
+      box-sizing:border-box;
+      border-radius:12px;
+
+      border:1px solid #E2E8F0;
+      outline:4px solid rgba(255,255,255,0);
+      outline-offset:0;
+
+      background:#fff;
+      color:#0b1220;
+
+      font-weight:600;
+      font-size:15px;
+      letter-spacing:.1px;
+
+      cursor:pointer;
+      user-select:none;
+
+      transition: border-color .14s ease, outline-color .14s ease;
+    }
+
+    html.npHome-scope .ctaArrow{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      transform:translateY(0);
+      transition:transform .50s ease;
+    }
+
+    html.npHome-scope .cta:hover .ctaArrow{
+      transform:translateX(6px);
+    }
+
+    html.npHome-scope .cta.isHot{
+      border-color:transparent;
+      outline-color: var(--ring);
+    }
+
+    html.npHome-scope .cta.isHot .ctaArrow{
+      transform:translateX(6px);
+    }
+
+    html.npHome-scope /* Footer: 버튼 아래 60px */
+    .footer{
+      margin-top: 60px;
+      padding: 0 0 8px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 400;
+      text-align: center;
+    }
+
+    
+    @media (max-width: 860px){
+      html.npHome-scope .brandLogo{ width: var(--logoW-m); }
+      html.npHome-scope h1{ font-size: 32px; }
+      html.npHome-scope .intakeBox{ width: 100%; min-height: 150px; height: 150px; max-height: 292px; }
+      html.npHome-scope .intakeText{ min-height: 96px; height: 96px; max-height: 218px; }
+      html.npHome-scope .intakeMirror{ width: calc(100vw - 72px); }
+      html.npHome-scope .intakeTools{ padding-top: 10px; }
+      html.npHome-scope .sampleRow{ width: 100%; }
+      html.npHome-scope .intakeWrap{ width: 100%; }
+      html.npHome-scope .subtitle{ font-size: 16px; }
+    }
+
+
+    html.npHome-scope /* =========================================================
+       (1) Entrance motion (layout fixed: opacity/transform only)
+       - 요소는 처음부터 자리(레이아웃)를 차지한 채로 투명/이동 상태만 바뀜
+    ========================================================= */
+    .npHome-enterY{
+      opacity:0;
+      transform: translateY(-10px);
+      will-change: opacity, transform;
+    }
+    html.npHome-scope .npHome-enterY.isIn{
+      opacity:1;
+      transform: translateY(0);
+      transition: opacity var(--enterDur, 260ms) ease, transform var(--enterDur, 260ms) ease;
+    }
+
+    html.npHome-scope /* =========================================================
+       Title/SubTitle typewriter (spaces preserved)
+       - span 하나씩 등장하지만 opacity만 변화, html.npHome-scope 레이아웃 변동 없음
+    ========================================================= */
+    .npHome-typeLine{
+      display:inline;
+      white-space: pre; /* 공백 폭 유지 */
+    }
+    html.npHome-scope .npHome-twChar{
+      display:inline-block;
+      opacity:0;
+      will-change: opacity;
+    }
+    html.npHome-scope .npHome-twChar.isOn{
+      opacity:1;
+      transition: opacity var(--twFadeDur, 80ms) linear;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="page">
+    <main class="main">
+      <div class="container">
+        <section class="hero" aria-label="Neuprint main entry">
+
+          <div class="brand">
+            <!-- (1) 로고: 위->아래 -->
+            <img class="brandLogo npHome-enterY" id="brandLogo" src="/images/neuprint_logo.svg" alt="NeuPrint Logo" />
+
+            <!-- (1) 태그라인: 위->아래 -->
+            <div class="brandline npHome-enterY" id="brandline">
+              <span>Neuprint Cognitive Forensics Engine v2.0</span>
+            </div>
+          </div>
+
+          <!-- (2) 타이틀: 타입라이터. 공백 유지. 단어 중간 줄바꿈 방지 -->
+          <h1 id="heroTitle">
+            <span class="npHome-typeLine" id="titleLine1"></span><br/>
+            <span class="npHome-typeLine" id="titleLine2"></span>
+          </h1>
+
+          <!-- (변경) 서브타이틀: 위->아래(enterY) 등장 -->
+          <p class="subtitle npHome-enterY" id="heroSubtitle"></p>
+
+          <div class="intakeWrap">
+            <!-- (1) 텍스트에어리어: 위->아래 -->
+            <div class="intakeBox npHome-enterY" id="intakeBox">
+              <textarea
+                id="intakeText"
+                class="intakeText"
+                placeholder="Enter text to analyze."
+                aria-label="Text intake"
+              wrap="soft"
+              rows="1"
+              ></textarea>
+              <div id="intakeMirror" class="intakeMirror" aria-hidden="true"></div>
+
+              <div class="intakeTools" aria-label="Input tools (placeholders)">
+                <button class="iconBtn" type="button" aria-label="Attach file (placeholder)" title="Attach file (placeholder)">
+                  <span class="material-symbols--attach-file-rounded" aria-hidden="true"></span>
+                </button>
+
+                <button class="iconBtn" type="button" aria-label="Voice record (placeholder)" title="Voice record (placeholder)">
+                  <span class="material-symbols--mic" aria-hidden="true"></span>
+                </button>
+
+                <button class="iconBtn" type="button" aria-label="Image search (placeholder)" title="Image search (placeholder)">
+                  <span class="material-symbols--center-focus-weak-outline" aria-hidden="true"></span>
+                </button>
+              </div>
+            </div>
+
+            <!-- (1) 샘플버튼: 위->아래 -->
+            <div class="sampleRow npHome-enterY" id="sampleRow" aria-label="Sample quick inserts">
+              <button class="sampleBtn" type="button" data-sample="sample1">Narrative</button>
+              <button class="sampleBtn" type="button" data-sample="sample2">Reflection</button>
+              <button class="sampleBtn" type="button" data-sample="sample3">Argument</button>
+              <button class="sampleBtn" type="button" data-sample="sample4">Analysis</button>
+              <button class="sampleBtn" type="button" data-sample="sample5">Policy</button>
+            </div>
+
+            <!-- (1) CTA: 위->아래 -->
+            <button class="cta npHome-enterY" id="ctaBtn" type="button" aria-label="Analyze Text">
+              Analyze Text
+              <span class="material-symbols-outlined ctaArrow" aria-hidden="true">arrow_right_alt</span>
+            </button>
+
+            <!-- (1) footer: 위->아래 -->
+            <footer class="footer npHome-enterY" id="footer" role="contentinfo" aria-label="Footer">
+              Copyright © 2026 Neuprint. All rights reserved. U.S. entity in formation.
+            </footer>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+
+
+  <div id="npStatusOverlay" class="npOverlay" aria-hidden="true" role="status" aria-live="polite">
+    <div class="npOverlayCard">
+      <div class="npOverlayIconWrap" aria-hidden="true">
+        <svg class="npSpinner" viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="12" r="10"
+            stroke="#111827"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-dasharray="60"
+            stroke-dashoffset="20"/>
+        </svg>
+        <svg class="npCheck" viewBox="0 0 24 24" fill="none">
+          <path d="M5 13L9 17L19 7"
+            stroke="#111827"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <p id="npStatusTitle" class="npOverlayTitle">Analyzing</p>
+    </div>
+  </div>
+
+<script>
+(function(){
+  if(!document.documentElement.classList.contains('npHome-scope')) return;
+
+  (function(){
+    "use strict";
+
+    const textarea = document.getElementById("intakeText");
+    const intakeBox = document.getElementById("intakeBox");
+    const cta = document.getElementById("ctaBtn");
+    const sampleBtns = Array.from(document.querySelectorAll(".sampleBtn"));
+    const SAMPLE_TEXTS = {
+  "sample1": "When I was eleven, my grandfather gave me a small folding knife with a worn blue handle. It was not a beautiful object. The blade was scratched, the hinge was stiff, and the plastic grip had faded from years of use. Yet he handed it to me with unusual care, as if the object carried more meaning than its appearance suggested.\n\nWe were standing beside the small storage shed behind his house. The afternoon was quiet, and the sound of dry leaves moving across the ground seemed unusually clear. My grandfather opened the knife slowly and told me to carve a point at the end of a fallen branch.\n\nAt first I cut the wood quickly and carelessly. I assumed that the harder I pushed, the faster the branch would take shape. Instead the blade slipped and left rough marks across the surface. The branch looked uneven and broken.\n\nMy grandfather watched quietly for a moment before speaking. Then he said something simple: “Speed makes mistakes louder.” He told me to slow down and pay attention to the direction of the wood grain.\n\nWhen I tried again, the cuts became smaller and more controlled. The knife moved more smoothly, and the branch gradually took a cleaner shape. Years later I realized that the lesson had little to do with carving wood. It was about learning how attention changes the way we approach a problem.",
+  "sample2": "Over the past year I have used artificial intelligence tools frequently while writing essays and reports. At first the experience felt strange because the system could generate explanations almost instantly. The speed of the response created the impression that complex reasoning had been solved automatically.\n\nHowever, after using the tools repeatedly, I began to notice something different. The most useful moments did not occur when the AI produced a complete answer. They occurred when the response forced me to reconsider my own assumptions.\n\nSometimes the system introduced an argument that I had not previously considered. At other times the explanation was technically correct but did not match the direction I wanted my thinking to go.\n\nIn those situations I had to rewrite the text and reorganize the argument. Through this process I gradually realized that the important work was not the generation of sentences.\n\nThe important work was deciding which ideas actually deserved to remain in the final explanation. In that sense, AI did not replace thinking. Instead it changed the environment in which thinking takes place.",
+  "sample3": "Many critics argue that artificial intelligence tools weaken human reasoning because they allow people to generate complete essays with very little effort. According to this view, automated text encourages users to rely on machines instead of developing their own arguments.\n\nThis concern is understandable, but it may overlook how reasoning normally develops. Writers rarely form complex arguments in isolation. They consult books, research papers, and conversations while constructing explanations.\n\nAI systems can function as another external source of ideas. When the system proposes a possible argument, the user still needs to evaluate whether the claim is accurate and logically consistent.\n\nIf a person simply copies the generated text without examining it, reasoning may indeed become weaker. However, if the user treats the AI output as a draft and critically evaluates its structure, the interaction can actually strengthen the reasoning process.\n\nTherefore the key issue is not whether AI is used. The key issue is whether the human user remains responsible for interpreting and shaping the final argument.",
+  "sample4": "Debates about artificial intelligence often focus on a simple question: who produced the final text. This perspective assumes that authorship can be determined by looking only at the finished document.\n\nIn reality, writing usually develops through multiple stages. A person begins by defining a question and organizing the structure of an idea.\n\nWhen an AI system becomes part of the process, it introduces an additional layer of interaction. The system may generate explanations or alternative arguments.\n\nHowever, those suggestions do not automatically determine the final outcome. The user still decides which ideas are relevant and which ones should be removed.\n\nThis means that the reasoning process unfolds across several steps. The human defines the objective, the system generates possibilities, and the human evaluates those possibilities.\n\nUnderstanding AI-assisted writing therefore requires examining the structure of reasoning across the entire interaction rather than focusing only on the final text.",
+  "sample5": "As artificial intelligence tools become more common, governments and institutions face an important policy question: how should AI-assisted work be evaluated and regulated.\n\nMany proposed policies focus on detecting whether a text was generated by AI. Detection systems attempt to identify patterns that distinguish automated writing from human writing.\n\nAlthough detection may be useful in some contexts, it does not fully address the deeper issue of responsibility.\n\nIn many real situations the final document is produced through interaction between a human user and an AI system.\n\nA more effective policy approach would evaluate the reasoning process behind the work. If the human user remains responsible for selecting information, interpreting suggestions, and making final decisions, AI can be understood as a supporting tool.\n\nPolicies that recognize this distinction may provide a more realistic framework for governing AI-assisted reasoning while preserving human accountability."
+};
+    const statusOverlay = document.getElementById("npStatusOverlay");
+    const statusTitle = document.getElementById("npStatusTitle");
+    const intakeMirror = document.getElementById("intakeMirror");
+
+    let sampleSelected = false;
+    let isSubmitting = false;
+    let stageTimerIds = [];
+    let successRedirectTimer = null;
+
+
+    function syncMirrorSize(){
+      if(!intakeMirror) return;
+      const boxWidth = intakeBox.clientWidth;
+      const padX = 32; // 16 left + 16 right
+      intakeMirror.style.width = Math.max(0, boxWidth - padX) + "px";
+    }
+
+    function autoGrowTextarea(animate = true){
+      const isMobile = window.innerWidth <= 860;
+      const minText = 96;
+      const maxText = isMobile ? 218 : 254;
+      const minBox = 150;
+      const maxBox = isMobile ? 292 : 320;
+
+      syncMirrorSize();
+
+      const value = textarea.value.replace(/\r\n?/g, "\n");
+      const mirrorText = value.length ? value : " ";
+      intakeMirror.textContent = mirrorText + "\n";
+
+      const natural = Math.ceil(intakeMirror.getBoundingClientRect().height);
+      const targetText = Math.max(minText, Math.min(natural, maxText));
+
+      const tools = intakeBox.querySelector(".intakeTools");
+      const toolsH = tools ? tools.offsetHeight : 38;
+      const targetBox = Math.max(minBox, Math.min(targetText + toolsH + 40, maxBox));
+
+      const prevTextTransition = textarea.style.transition;
+      const prevBoxTransition = intakeBox.style.transition;
+
+      if(!animate){
+        textarea.style.transition = "none";
+        intakeBox.style.transition = "none";
+      }
+
+      textarea.style.height = targetText + "px";
+      intakeBox.style.height = targetBox + "px";
+
+      const shouldScroll = natural > maxText;
+      textarea.style.overflowY = shouldScroll ? "auto" : "hidden";
+
+      if(!animate){
+        void textarea.offsetHeight;
+        textarea.style.transition = prevTextTransition;
+        intakeBox.style.transition = prevBoxTransition;
+      }
+    }
+
+
+    function clearStageTimers(){
+      stageTimerIds.forEach(id => clearTimeout(id));
+      stageTimerIds = [];
+    }
+
+    function setOverlayText(nextText){
+      if(!statusTitle) return;
+      statusTitle.classList.add("isChanging");
+      window.setTimeout(()=>{
+        statusTitle.textContent = nextText;
+        statusTitle.classList.remove("isChanging");
+      }, 140);
+    }
+
+    function setOverlayState(state, titleText){
+      if(!statusOverlay || !statusTitle) return;
+      const isVisible = state === "loading" || state === "success";
+      statusOverlay.classList.toggle("isVisible", isVisible);
+      statusOverlay.classList.toggle("isSuccess", state === "success");
+      statusOverlay.setAttribute("aria-hidden", isVisible ? "false" : "true");
+
+      if(!isVisible){
+        clearStageTimers();
+        if(successRedirectTimer){ clearTimeout(successRedirectTimer); successRedirectTimer = null; }
+        statusTitle.classList.remove("isChanging");
+        statusTitle.textContent = "Analyzing text";
+        return;
+      }
+
+      if(titleText){
+        setOverlayText(titleText);
+      }else if(state === "loading"){
+        setOverlayText("Analyzing");
+      }else if(state === "success"){
+        setOverlayText("Analyzed");
+      }
+    }
+
+    function startOverlayStages(){
+      clearStageTimers();
+      setOverlayState("loading", "Analyzing");
+      stageTimerIds.push(window.setTimeout(()=>{
+        if(isSubmitting) setOverlayState("loading", "Mapping reasoning structure");
+      }, 1200));
+      stageTimerIds.push(window.setTimeout(()=>{
+        if(isSubmitting) setOverlayState("loading", "Generating report");
+      }, 2400));
+    }
+
+    function setActiveSample(btn){
+      sampleBtns.forEach(b => b.classList.remove("isActive"));
+      if(btn) btn.classList.add("isActive");
+    }
+
+    function clearSampleActive(){
+      setActiveSample(null);
+      sampleSelected = false;
+    }
+
+    function syncStates(){
+      const hasValue = textarea.value.trim().length > 0;
+      cta.classList.toggle("isHot", hasValue);
+      intakeBox.classList.toggle("isFilled", hasValue);
+    }
+
+    function onUserEdit(){
+      if(sampleSelected) clearSampleActive();
+      syncStates();
+      autoGrowTextarea(true);
+    }
+
+    textarea.addEventListener("input", onUserEdit);
+
+    window.addEventListener("resize", ()=>{
+      autoGrowTextarea(false);
+    });
+
+
+    function getRawTextareaValue(){
+      return textarea.value.replace(/\r\n?/g, "\n");
+    }
+
+    textarea.addEventListener("paste", (e)=>{
+      const cd = e.clipboardData || window.clipboardData;
+      if(!cd) return;
+      const pasted = (cd.getData("text/plain") || "").replace(/\r\n?/g, "\n");
+      if(!pasted) return;
+      e.preventDefault();
+
+      const start = textarea.selectionStart ?? textarea.value.length;
+      const end = textarea.selectionEnd ?? textarea.value.length;
+      const current = textarea.value || "";
+      textarea.value = current.slice(0, start) + pasted + current.slice(end);
+
+      const caret = start + pasted.length;
+      textarea.setSelectionRange(caret, caret);
+
+      if(sampleSelected) clearSampleActive();
+      syncStates();
+      requestAnimationFrame(() => autoGrowTextarea(true));
+    });
+
+
+    /* =========================================================
+       샘플 클릭 시 "회색 -> 진한 링" 플리커 제거
+       - 버튼이 포커스를 먹어 :focus-within이 잠깐 끊기는 순간이 원인
+       - mousedown/touchstart에서 포커스 이동을 차단
+       - border/box-shadow transition도 1프레임만 끄고 즉시 적용
+    ========================================================= */
+    function snapIntakeVisualUpdate(){
+      const prevTransition = intakeBox.style.transition;
+      intakeBox.style.transition = "none";
+      void intakeBox.offsetHeight; // force reflow
+      requestAnimationFrame(()=>{ intakeBox.style.transition = prevTransition; });
+    }
+
+    /* Sample buttons */
+    sampleBtns.forEach((btn)=>{
+      // 버튼이 포커스를 가져가지 못하게 해서 textarea의 focus-within 끊김 방지
+      btn.addEventListener("mousedown", (e)=>{ e.preventDefault(); });
+      btn.addEventListener("touchstart", (e)=>{ e.preventDefault(); }, { passive:false });
+
+      btn.addEventListener("click", ()=>{
+        const isAlreadyActive = btn.classList.contains("isActive");
+
+        // 같은 샘플을 다시 클릭한 경우 -> 토글 해제
+        if(isAlreadyActive){
+          snapIntakeVisualUpdate();
+          textarea.value = "";
+          textarea.blur();
+          clearSampleActive();
+          syncStates();
+          requestAnimationFrame(() => autoGrowTextarea(true));
+          return;
+        }
+
+        // 새로운 샘플 클릭
+        const sampleKey = btn.getAttribute("data-sample") || "";
+        const t = SAMPLE_TEXTS[sampleKey] || "";
+
+        // 플리커 방지: 상태 전환을 "즉시" 스냅
+        snapIntakeVisualUpdate();
+
+        // 값 먼저 주입 -> isFilled 즉시 반영
+        textarea.value = t;
+        syncStates();
+        requestAnimationFrame(() => autoGrowTextarea(true));
+
+        // 포커스는 다음 프레임에 (레이아웃/스타일 적용 후)
+        requestAnimationFrame(()=>{
+          try{
+            textarea.focus({ preventScroll:true });
+          }catch(_){
+            textarea.focus();
+          }
+        });
+
+        setActiveSample(btn);
+        sampleSelected = true;
+      });
+    });
+
+    /* Empty input alert */
+    cta.addEventListener("click", async ()=>{
+      const rawText = getRawTextareaValue();
+      if(!rawText.trim()){
+        alert("Please enter text.");
+        textarea.focus();
+        return;
+      }
+      if(isSubmitting) return;
+      isSubmitting = true;
+      cta.disabled = true;
+      cta.style.opacity = "0.7";
+      startOverlayStages();
+      try{
+        const res = await fetch("/api/analyze", {
+          method: "POST",
+          headers: {"Content-Type":"application/json"},
+          body: JSON.stringify({ text: rawText })
+        });
+        const data = await res.json();
+        if(!res.ok || !data || data.ok === false){
+          const msg = (data && (data.error || data.message)) ? (data.error || data.message) : ("Request failed ("+res.status+")");
+          setOverlayState(null);
+          alert(msg);
+          return;
+        }
+
+        const reportObj = (data && data.report) ? data.report : data;
+        const reportRaw = JSON.stringify(reportObj);
+        try{ sessionStorage.setItem("np_report_json", reportRaw); }catch(_e){ }
+        try{ localStorage.setItem("np_report_json", reportRaw); }catch(_e){ }
+        try{ window.name = "NP_REPORT:"+reportRaw; }catch(_e){ }
+
+        clearStageTimers();
+        setOverlayState("success", "Complete");
+
+        const goReport = () => {
+          try{
+            window.location.assign("/report");
+          }catch(_e){
+            window.location.href = "/report";
+          }
+        };
+
+        if(successRedirectTimer){ clearTimeout(successRedirectTimer); }
+        successRedirectTimer = window.setTimeout(goReport, 800);
+      }catch(e){
+        clearStageTimers();
+        setOverlayState(null);
+        alert("Failed to analyze. Check network and API key.");
+      }finally{
+        setTimeout(()=>{
+          cta.disabled = false;
+          cta.style.opacity = "1";
+          isSubmitting = false;
+        }, 0);
+      }
+    });
+
+    syncStates();
+    autoGrowTextarea(false);
+    requestAnimationFrame(()=>autoGrowTextarea(false));
+
+    /* =========================================================
+       (1)(2)(3) Entrance sequence + typewriter
+       (이 아래는 기존 로직 그대로)
+    ========================================================= */
+
+    /* ===== 속도 조절용 상수 ===== */
+    const ENTER_DUR = 500;
+    const STEP_GAP  = 200;
+    const TW_CHAR_GAP = 10;
+    const TW_FADE_DUR = 500;
+
+    const TITLE_PRE_GAP  = 100;
+    const TITLE_POST_GAP = 200;
+
+    const brandLogo = document.getElementById("brandLogo");
+    const brandline = document.getElementById("brandline");
+    const heroSubtitle = document.getElementById("heroSubtitle");
+    const sampleRow = document.getElementById("sampleRow");
+    const footer = document.getElementById("footer");
+
+    const titleLine1 = document.getElementById("titleLine1");
+    const titleLine2 = document.getElementById("titleLine2");
+
+    const TITLE_1 = "Cognitive structure as infrastructure,";
+    const TITLE_2 = "not merely as output.";
+    const SUBTEXT = "A stable reference layer for reasoning structure, enabling consistent comparison across outputs.";
+
+    function setEnterDur(el){
+      if(!el) return;
+      el.style.setProperty("--enterDur", ENTER_DUR + "ms");
+    }
+
+    function enterY(el, delayMs){
+      if(!el) return;
+      setEnterDur(el);
+      setTimeout(()=>{ el.classList.add("isIn"); }, delayMs);
+    }
+
+    function buildTypeSpans(targetEl, text){
+      targetEl.innerHTML = "";
+      const chars = Array.from(text);
+      chars.forEach((ch)=>{
+        const s = document.createElement("span");
+        s.className = "npHome-twChar";
+        s.style.setProperty("--twFadeDur", TW_FADE_DUR + "ms");
+        s.textContent = (ch === " ") ? "\u00A0" : ch;
+        targetEl.appendChild(s);
+      });
+      return Array.from(targetEl.querySelectorAll(".npHome-twChar"));
+    }
+
+    function typeIn(spans, startDelay){
+      spans.forEach((sp, i)=>{
+        setTimeout(()=>{ sp.classList.add("isOn"); }, startDelay + i * TW_CHAR_GAP);
+      });
+      return startDelay + spans.length * TW_CHAR_GAP;
+    }
+
+    [brandLogo, brandline, heroSubtitle, intakeBox, sampleRow, cta, footer].forEach((el)=>{
+      if(!el) return;
+      el.classList.add("npHome-enterY");
+    });
+
+    const t1Spans = buildTypeSpans(titleLine1, TITLE_1);
+    const t2Spans = buildTypeSpans(titleLine2, TITLE_2);
+
+    heroSubtitle.textContent = SUBTEXT;
+
+    let t = 80;
+
+    enterY(brandLogo, t);
+    t += STEP_GAP;
+
+    enterY(brandline, t);
+    t += STEP_GAP + 40;
+
+    t += TITLE_PRE_GAP;
+
+    t = typeIn(t1Spans, t);
+    t += 30;
+    t = typeIn(t2Spans, t);
+
+    t += TITLE_POST_GAP;
+
+    enterY(heroSubtitle, t);
+    t += STEP_GAP;
+
+    enterY(intakeBox, t);
+    t += STEP_GAP;
+
+    enterY(sampleRow, t);
+    t += STEP_GAP;
+
+    enterY(cta, t);
+    t += STEP_GAP;
+
+    enterY(footer, t);
+  })();
+
+})();
+</script>
+
+
+
+
+
+</body>
+</html>
