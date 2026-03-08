@@ -49,6 +49,11 @@ async function callOpenAI(prompt: string, userText: string) {
       { role: 'user', content: userText },
     ],
     temperature: 0,
+    top_p: 1,
+    seed: 42,
+    frequency_penalty: 0,
+    presence_penalty: 0,
+    max_output_tokens: 3000,
     response_format: { type: 'json_object' },
   };
 
