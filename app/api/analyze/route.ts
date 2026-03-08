@@ -40,7 +40,7 @@ async function callOpenAI(prompt: string, userText: string) {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) throw new Error('Missing OPENAI_API_KEY environment variable.');
 
-  const model = process.env.OPENAI_MODEL || 'gpt-4.1-mini';
+  const model = process.env.OPENAI_MODEL || 'gpt-4.o-mini';
 
   const body = {
     model,
@@ -53,7 +53,6 @@ async function callOpenAI(prompt: string, userText: string) {
     seed: 42,
     frequency_penalty: 0,
     presence_penalty: 0,
-    response_format: { type: 'json_object' },
   };
 
   const res = await fetch('https://api.openai.com/v1/chat/completions', {
