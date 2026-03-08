@@ -96,6 +96,10 @@ function toReportSchema(extraction: any, derived: any, inputText: string) {
   const cffPattern = output?.cff?.pattern || {};
   const cffDefinition = cffPattern?.definition || {};
 
+  const humanDist = rcd?.Human ?? rcd?.human ?? null;
+  const hybridDist = rcd?.Hybrid ?? rcd?.hybrid ?? null;
+  const aiDist = rcd?.AI ?? rcd?.ai ?? null;
+
   return {
     meta: {
       input_language: detectInputLanguage(inputText),
@@ -145,30 +149,45 @@ function toReportSchema(extraction: any, derived: any, inputText: string) {
         chip_label: output?.cff?.final_type?.chip_label || output?.cff?.final_type?.label || '',
         label: output?.cff?.final_type?.label || '',
         type_code: output?.cff?.final_type?.type_code || '',
+        confidence: output?.cff?.final_type?.confidence ?? null,
+        interpretation: output?.cff?.final_type?.interpretation || '',
       },
       pattern: {
+        primary_label: cffPattern?.primary_label || '',
+        secondary_label: cffPattern?.secondary_label || '',
+        primary_description: cffDefinition?.primary || '',
+        secondary_description: cffDefinition?.secondary || '',
         definition: {
-          line1: cffDefinition?.line1 || '',
-          line2: cffDefinition?.line2 || '',
+          primary: cffDefinition?.primary || '',
+          secondary: cffDefinition?.secondary || '',
+          line1: cffDefinition?.line1 || cffDefinition?.primary || '',
+          line2: cffDefinition?.line2 || cffDefinition?.secondary || '',
         },
         explanation: cffPattern?.explanation || '',
         key_observation: cffPattern?.key_observation || '',
       },
+      labels: Array.isArray(output?.cff?.labels) ? output.cff.labels : [],
+      values_0to1: Array.isArray(output?.cff?.values_0to1) ? output.cff.values_0to1 : [],
       scores: output?.cff?.scores || {},
       matched_reasons: Array.isArray(output?.cff?.matched_reasons) ? output.cff.matched_reasons : [],
       confidence_note: output?.cff?.confidence_note || '',
     },
     rc: {
       reasoning_control_distribution: {
-        human: rcd?.human ?? null,
-        hybrid: rcd?.hybrid ?? null,
-        ai: rcd?.ai ?? null,
+        human: humanDist,
+        hybrid: hybridDist,
+        ai: aiDist,
+        Human: humanDist,
+        Hybrid: hybridDist,
+        AI: aiDist,
         final_determination: rcd?.final_determination || '',
         determination_sentence: rcd?.determination_sentence || '',
       },
-      structural_pattern: output?.rc?.structural_pattern || '',
+      structural_pattern: output?.rc?.structural_pattern || output?.rc?.control_pattern || '',
+      control_pattern: output?.rc?.control_pattern || output?.rc?.structural_pattern || '',
       reliability_band: output?.rc?.reliability_band || '',
       band_rationale: output?.rc?.band_rationale || '',
+      summary: output?.rc?.summary || '',
       observed_structural_signals: {
         '1': output?.rc?.observed_structural_signals?.['1'] || '',
         '2': output?.rc?.observed_structural_signals?.['2'] || '',
