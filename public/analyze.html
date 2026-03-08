@@ -825,13 +825,13 @@ html.npHome-scope .npOverlayIconWrap{
       }, 2500));
       stageTimerIds.push(window.setTimeout(()=>{
         if(isSubmitting) setOverlayState("loading", "Mapping reasoning signals");
-      }, 3500));
-      stageTimerIds.push(window.setTimeout(()=>{
-        if(isSubmitting) setOverlayState("loading", "Calculating cognitive metrics");
       }, 5000));
       stageTimerIds.push(window.setTimeout(()=>{
-        if(isSubmitting) setOverlayState("loading", "Generating forensic report");
+        if(isSubmitting) setOverlayState("loading", "Calculating cognitive metrics");
       }, 6500));
+      stageTimerIds.push(window.setTimeout(()=>{
+        if(isSubmitting) setOverlayState("loading", "Generating forensic report");
+      }, 9500));
     }
 
     function setActiveSample(btn){
