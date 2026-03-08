@@ -822,16 +822,16 @@ html.npHome-scope .npOverlayIconWrap{
       setOverlayState("loading", "Initializing engine");
       stageTimerIds.push(window.setTimeout(()=>{
         if(isSubmitting) setOverlayState("loading", "Segmenting reasoning units");
-      }, 3500));
+      }, 2500));
       stageTimerIds.push(window.setTimeout(()=>{
         if(isSubmitting) setOverlayState("loading", "Mapping reasoning signals");
-      }, 4500));
+      }, 3500));
       stageTimerIds.push(window.setTimeout(()=>{
         if(isSubmitting) setOverlayState("loading", "Calculating cognitive metrics");
-      }, 7000));
+      }, 5000));
       stageTimerIds.push(window.setTimeout(()=>{
         if(isSubmitting) setOverlayState("loading", "Generating forensic report");
-      }, 5000));
+      }, 6500));
     }
 
     function setActiveSample(btn){
